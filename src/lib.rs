@@ -54,6 +54,15 @@ impl<K, V> FakeMap<K, V> {
         self.get_idx_of_key(key).map(|idx| &self.items[idx].1)
     }
 
+    #[inline]
+    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+        where
+            Q: PartialEq,
+            K: Borrow<Q>
+    {
+        self.get_idx_of_key(key).map(|idx| self.items.remove(idx).1)
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = &(K, V)> {
         self.items.iter()
     }
