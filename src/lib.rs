@@ -1,11 +1,11 @@
 use serde::de::{MapAccess, Visitor};
 use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt;
-use std::marker::PhantomData;
 use std::borrow::Borrow;
-use std::iter::FromIterator;
+use std::fmt;
 use std::fmt::{Debug, Formatter};
+use std::iter::FromIterator;
+use std::marker::PhantomData;
 
 #[derive(Clone, Eq, Hash, PartialOrd, PartialEq)]
 pub struct FakeMap<K, V> {
@@ -30,67 +30,76 @@ impl<K, V> FakeMap<K, V> {
     }
 
     #[inline]
-    pub fn insert(&mut self, k: K, v: V) {
-        self.items.push((k, v));
-    }
-
-    pub fn get_at(&self, index: usize) -> &V {
-        &self.items[index].1
+    pub fn insert(&mut self, k: K, v: V)
+    where
+        K: Eq,
+    {
+        match self.get_idx_of_key(&k) {
+            None => {
+                self.items.push((k, v));
+            }
+            Some(x) => {
+                self.items[x].1 = v;
+            }
+        }
     }
 
     fn get_idx_of_key<Q: ?Sized>(&self, key: &Q) -> Option<usize>
-        where
-            Q: PartialEq,
-            K: Borrow<Q>
+    where
+        Q: PartialEq,
+        K: Borrow<Q>,
     {
         self.items.iter().position(|item| item.0.borrow() == key)
     }
 
     #[inline]
     pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
-        where
-            Q: PartialEq,
-            K: Borrow<Q>
+    where
+        Q: PartialEq,
+        K: Borrow<Q>,
     {
         self.get_idx_of_key(key).map(|idx| &self.items[idx].1)
     }
 
     #[inline]
     pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
-        where
-            Q: PartialEq,
-            K: Borrow<Q>
+    where
+        Q: PartialEq,
+        K: Borrow<Q>,
     {
         self.get_idx_of_key(key).map(|idx| self.items.remove(idx).1)
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&(K, V)> {
+    pub fn iter(&self) -> impl Iterator<Item = &(K, V)> {
         self.items.iter()
     }
 
-    pub fn iter_mut(&mut self) -> impl Iterator<Item=(&mut K, &mut V)> {
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = (&mut K, &mut V)> {
         self.items.iter_mut().map(|kv| (&mut kv.0, &mut kv.1))
     }
 
-    pub fn keys(&self) -> impl Iterator<Item=&K> {
+    pub fn keys(&self) -> impl Iterator<Item = &K> {
         self.items.iter().map(|kv| &kv.0)
     }
 
-    pub fn keys_mut(&self) -> impl Iterator<Item=&K> {
+    pub fn keys_mut(&self) -> impl Iterator<Item = &K> {
         self.items.iter().map(|kv| &kv.0)
     }
 
-    pub fn values(&self) -> impl Iterator<Item=&V> {
+    pub fn values(&self) -> impl Iterator<Item = &V> {
         self.items.iter().map(|kv| &kv.1)
     }
 
-    pub fn values_mut(&mut self) -> impl Iterator<Item=&mut V> {
+    pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
         self.items.iter_mut().map(|kv| &mut kv.1)
     }
 }
 
 impl<K, V> Debug for FakeMap<K, V>
-    where K: Debug, V: Debug {
+where
+    K: Debug,
+    V: Debug,
+{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{{")?;
         for (i, (key, value)) in self.iter().enumerate() {
@@ -115,7 +124,7 @@ impl<K, V> IntoIterator for FakeMap<K, V> {
 }
 
 impl<K, V> FromIterator<(K, V)> for FakeMap<K, V> {
-    fn from_iter<T: IntoIterator<Item=(K, V)>>(iter: T) -> Self {
+    fn from_iter<T: IntoIterator<Item = (K, V)>>(iter: T) -> Self {
         FakeMap {
             items: iter.into_iter().collect(),
         }
@@ -149,9 +158,9 @@ impl<K, V> FakeMapVisitor<K, V> {
 // By default those methods will return an error, which makes sense
 // because we cannot deserialize a MyMap from an integer or string.
 impl<'de, K, V> Visitor<'de> for FakeMapVisitor<K, V>
-    where
-        K: Deserialize<'de>,
-        V: Deserialize<'de>,
+where
+    K: Deserialize<'de> + Eq,
+    V: Deserialize<'de>,
 {
     // The type that our Visitor is going to produce.
     type Value = FakeMap<K, V>;
@@ -165,8 +174,8 @@ impl<'de, K, V> Visitor<'de> for FakeMapVisitor<K, V>
     // Deserializer. The MapAccess input is a callback provided by
     // the Deserializer to let us see each entry in the map.
     fn visit_map<M>(self, mut access: M) -> Result<Self::Value, M::Error>
-        where
-            M: MapAccess<'de>,
+    where
+        M: MapAccess<'de>,
     {
         let mut map = FakeMap::with_capacity(access.size_hint().unwrap_or(0));
 
@@ -181,26 +190,26 @@ impl<'de, K, V> Visitor<'de> for FakeMapVisitor<K, V>
 }
 
 impl<'de, K, V> Deserialize<'de> for FakeMap<K, V>
-    where
-        K: Deserialize<'de>,
-        V: Deserialize<'de>,
+where
+    K: Deserialize<'de> + Eq,
+    V: Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, <D as Deserializer<'de>>::Error>
-        where
-            D: Deserializer<'de>,
+    where
+        D: Deserializer<'de>,
     {
         deserializer.deserialize_map(FakeMapVisitor::new())
     }
 }
 
 impl<K, V> Serialize for FakeMap<K, V>
-    where
-        K: Serialize,
-        V: Serialize,
+where
+    K: Serialize,
+    V: Serialize,
 {
     fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         let mut serializer = serializer.serialize_map(Some(self.items.len()))?;
 
