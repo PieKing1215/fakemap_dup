@@ -3,7 +3,7 @@ name = "fakemap"
 version = "0.1.0"
 authors = ["Thomas Schaller <me@torkleyy.com>"]
 edition = "2018"
-description = ""
+description = "Map with Vec implementation, without ordering or hashing (for Serde deserialization)"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

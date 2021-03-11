@@ -1,5 +1,6 @@
 use serde::de::{MapAccess, Visitor};
-use serde::{Deserialize, Deserializer};
+use serde::ser::SerializeMap;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::marker::PhantomData;
 
@@ -34,12 +35,18 @@ impl<K, V> FakeMap<K, V> {
         &self.items[index].1
     }
 
-    fn get_idx_of_key(&self, key: &K) -> Option<usize> where K: PartialEq {
+    fn get_idx_of_key(&self, key: &K) -> Option<usize>
+    where
+        K: PartialEq,
+    {
         self.items.iter().position(|item| &item.0 == key)
     }
 
     #[inline]
-    pub fn get(&self, key: &K) -> Option<&V> where K: PartialEq {
+    pub fn get(&self, key: &K) -> Option<&V>
+    where
+        K: PartialEq,
+    {
         self.get_idx_of_key(key).map(|idx| &self.items[idx].1)
     }
 
@@ -136,5 +143,24 @@ where
         D: Deserializer<'de>,
     {
         deserializer.deserialize_map(FakeMapVisitor::new())
+    }
+}
+
+impl<K, V> Serialize for FakeMap<K, V>
+where
+    K: Serialize,
+    V: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error>
+    where
+        S: Serializer,
+    {
+        let mut serializer = serializer.serialize_map(Some(self.items.len()))?;
+
+        for (key, value) in self.iter() {
+            serializer.serialize_entry(key, value)?;
+        }
+
+        serializer.end()
     }
 }
