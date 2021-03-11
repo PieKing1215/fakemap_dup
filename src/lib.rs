@@ -95,7 +95,7 @@ impl<K, V> Debug for FakeMap<K, V>
         write!(f, "{{")?;
         for (i, (key, value)) in self.iter().enumerate() {
             if i > 0 {
-                write!(f, ", ");
+                write!(f, ", ")?;
             }
             write!(f, "{:?}: {:?}", key, value)?;
         }

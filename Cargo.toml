@@ -1,6 +1,6 @@
 [package]
 name = "fakemap"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Thomas Schaller <me@torkleyy.com>"]
 edition = "2018"
 description = "Map with Vec implementation, without ordering or hashing (for Serde deserialization)"
