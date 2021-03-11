@@ -3,6 +3,7 @@ use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::marker::PhantomData;
+use std::borrow::Borrow;
 
 #[derive(Clone, Debug, Eq, Hash, PartialOrd, PartialEq)]
 pub struct FakeMap<K, V> {
@@ -35,17 +36,19 @@ impl<K, V> FakeMap<K, V> {
         &self.items[index].1
     }
 
-    fn get_idx_of_key(&self, key: &K) -> Option<usize>
+    fn get_idx_of_key<Q: ?Sized>(&self, key: &Q) -> Option<usize>
     where
-        K: PartialEq,
+        Q: PartialEq,
+        K: Borrow<Q>
     {
-        self.items.iter().position(|item| &item.0 == key)
+        self.items.iter().position(|item| item.0.borrow() == key)
     }
 
     #[inline]
-    pub fn get(&self, key: &K) -> Option<&V>
+    pub fn get<Q: ?Sized>(&self, key: &Q) -> Option<&V>
     where
-        K: PartialEq,
+        Q: PartialEq,
+        K: Borrow<Q>
     {
         self.get_idx_of_key(key).map(|idx| &self.items[idx].1)
     }
