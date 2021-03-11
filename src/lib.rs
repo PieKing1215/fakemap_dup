@@ -4,6 +4,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt;
 use std::marker::PhantomData;
 use std::borrow::Borrow;
+use std::iter::FromIterator;
 
 #[derive(Clone, Debug, Eq, Hash, PartialOrd, PartialEq)]
 pub struct FakeMap<K, V> {
@@ -75,6 +76,14 @@ impl<K, V> FakeMap<K, V> {
 
     pub fn values_mut(&mut self) -> impl Iterator<Item = &mut V> {
         self.items.iter_mut().map(|kv| &mut kv.1)
+    }
+}
+
+impl<K, V> FromIterator<(K, V)> for FakeMap<K, V> {
+    fn from_iter<T: IntoIterator<Item=(K, V)>>(iter: T) -> Self {
+        FakeMap {
+            items: iter.into_iter().collect(),
+        }
     }
 }
 
