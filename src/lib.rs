@@ -88,6 +88,15 @@ impl<K, V> FakeMap<K, V> {
     }
 }
 
+impl<K, V> IntoIterator for FakeMap<K, V> {
+    type Item = (K, V);
+    type IntoIter = std::vec::IntoIter<(K, V)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.items.into_iter()
+    }
+}
+
 impl<K, V> FromIterator<(K, V)> for FakeMap<K, V> {
     fn from_iter<T: IntoIterator<Item=(K, V)>>(iter: T) -> Self {
         FakeMap {
