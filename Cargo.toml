@@ -7,6 +7,7 @@ description = "Map with Vec implementation, without ordering or hashing (for Ser
 license = "MIT"
 repository = "https://github.com/torkleyy/fakemap"
 documentation = "https://docs.rs/fakemap"
+readme = "README.md
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
