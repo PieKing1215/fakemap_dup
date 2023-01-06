@@ -34,14 +34,7 @@ impl<K, V> FakeMap<K, V> {
     where
         K: Eq,
     {
-        match self.get_idx_of_key(&k) {
-            None => {
-                self.items.push((k, v));
-            }
-            Some(x) => {
-                self.items[x].1 = v;
-            }
-        }
+        self.items.push((k, v));
     }
 
     fn get_idx_of_key<Q: ?Sized>(&self, key: &Q) -> Option<usize>
