@@ -1,2 +1,1 @@
-# fakemap
-Map with Vec implementation, without ordering or hashing (for Serde deserialization)
+A fork of [fakemap](torkleyy/fakemap) that allows items with duplicate keys
