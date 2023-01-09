@@ -30,6 +30,14 @@ impl<K, V> FakeMap<K, V> {
     }
 
     #[inline]
+    pub fn insert_idx(&mut self, i: usize, k: K, v: V)
+    where
+        K: Eq,
+    {
+        self.items.insert(i, (k, v));
+    }
+
+    #[inline]
     pub fn insert(&mut self, k: K, v: V)
     where
         K: Eq,
